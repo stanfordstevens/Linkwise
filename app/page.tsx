@@ -245,7 +245,7 @@ export default function Home() {
               )}
 
               {/* Link slot 2 appears after first gap is filled */}
-              {gaps[0].trim() && (
+              {gaps[0].trim() && !gapErrors[0] && (
                 <LinkSlot
                   index={1}
                   assignment={linkAssignments[1]}
@@ -256,7 +256,7 @@ export default function Home() {
               )}
 
               {/* Gap 2 appears after second link is placed */}
-              {gaps[0].trim() && linkAssignments[1] && (
+              {gaps[0].trim() && !gapErrors[0] && linkAssignments[1] && (
                 <GapInput
                   label="Gap word"
                   placeholder="Type the next connector"
@@ -267,7 +267,7 @@ export default function Home() {
               )}
 
               {/* Link slot 3 appears after second gap is filled */}
-              {gaps[1].trim() && (
+              {gaps[1].trim() && !gapErrors[1] && (
                 <LinkSlot
                   index={2}
                   assignment={linkAssignments[2]}
