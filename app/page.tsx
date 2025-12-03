@@ -13,6 +13,27 @@ const categories: { id: CategoryId; label: string; accent: string }[] = [
 const startWord = "Fast";
 const endWord = "Day";
 
+const birdWords = new Set([
+  "swift",
+  "jay",
+  "sparrow",
+  "robin",
+  "wren",
+  "finch",
+  "hawk",
+  "owl",
+  "tern",
+  "gull",
+  "crow",
+]);
+
+const synonymMap: Record<string, string[]> = {
+  fast: ["swift", "quick", "rapid", "speedy", "brisk"],
+  quick: ["fast", "swift", "rapid", "speedy", "brisk"],
+  swift: ["fast", "quick", "rapid", "speedy"],
+  jay: ["bird", "corvid"],
+};
+
 export default function Home() {
   const [selectedCategory, setSelectedCategory] = useState<CategoryId | null>(null);
   const [linkAssignments, setLinkAssignments] = useState<(CategoryId | null)[]>([
@@ -21,11 +42,54 @@ export default function Home() {
     null,
   ]);
   const [gaps, setGaps] = useState(["", ""]);
+  const [gapErrors, setGapErrors] = useState<(string | null)[]>([null, null]);
 
   const categoryLookup = useMemo(
     () => Object.fromEntries(categories.map((c) => [c.id, c.label])),
     []
   ) as Record<CategoryId, string>;
+
+  const rhymeKey = (word: string) => {
+    const lower = word.toLowerCase();
+    const match = lower.match(/[aeiouy][a-z]*$/);
+    return match ? match[0] : lower.slice(-2);
+  };
+
+  const validateGapWord = (gapIndex: number, value: string): string | null => {
+    const category = linkAssignments[gapIndex];
+    if (!category) return null;
+
+    const trimmed = value.trim();
+    if (!trimmed) return null;
+
+    const prevWord = gapIndex === 0 ? startWord : gaps[gapIndex - 1];
+    const current = trimmed.toLowerCase();
+    const previous = prevWord.trim().toLowerCase();
+
+    if (category === "synonym") {
+      const synonyms = synonymMap[previous];
+      if (synonyms && !synonyms.includes(current)) {
+        return `Should be a synonym of "${prevWord}".`;
+      }
+      return null;
+    }
+
+    if (category === "bird") {
+      if (!birdWords.has(current)) {
+        return `Should be a type of bird (e.g., Swift, Jay).`;
+      }
+      return null;
+    }
+
+    if (category === "rhyme") {
+      if (rhymeKey(current) !== rhymeKey(previous)) {
+        return `Should rhyme with "${prevWord}".`;
+      }
+      return null;
+    }
+
+    return null;
+  };
 
   const handleSelectCategory = (id: CategoryId) => {
     setSelectedCategory((current) => (current === id ? null : id));
@@ -62,6 +126,13 @@ export default function Home() {
     setGaps((prev) => {
       const next = [...prev];
       next[gapIndex] = value;
+      return next;
+    });
+
+    const error = validateGapWord(gapIndex, value);
+    setGapErrors((prev) => {
+      const next = [...prev];
+      next[gapIndex] = error;
       return next;
     });
   };
@@ -169,6 +240,7 @@ export default function Home() {
                   placeholder="Type a word that fits the link above"
                   value={gaps[0]}
                   onChange={(value) => handleWordChange(0, value)}
+                  error={gapErrors[0]}
                 />
               )}
 
@@ -190,6 +262,7 @@ export default function Home() {
                   placeholder="Type the next connector"
                   value={gaps[1]}
                   onChange={(value) => handleWordChange(1, value)}
+                  error={gapErrors[1]}
                 />
               )}
 
@@ -246,9 +319,10 @@ type GapInputProps = {
   placeholder: string;
   value: string;
   onChange: (value: string) => void;
+  error?: string | null;
 };
 
-function GapInput({ label, placeholder, value, onChange }: GapInputProps) {
+function GapInput({ label, placeholder, value, onChange, error }: GapInputProps) {
   return (
     <div className="relative flex items-start gap-3 pl-10">
       <div className="absolute left-1.5 top-2 h-2 w-2 rounded-full bg-amber-400 shadow-[0_0_0_6px_rgba(251,191,36,0.15)]" />
@@ -260,8 +334,13 @@ function GapInput({ label, placeholder, value, onChange }: GapInputProps) {
           value={value}
           onChange={(event) => onChange(event.target.value)}
           placeholder={placeholder}
-          className="w-full rounded-xl border border-zinc-800/70 bg-zinc-950/60 px-4 py-3 text-base font-semibold text-zinc-100 placeholder:text-zinc-600 focus:border-amber-400/60 focus:outline-none focus:ring-2 focus:ring-amber-400/40"
+          className={`w-full rounded-xl border px-4 py-3 text-base font-semibold text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:ring-2 ${
+            error
+              ? "border-rose-500/60 bg-rose-500/5 focus:border-rose-500/80 focus:ring-rose-500/30"
+              : "border-zinc-800/70 bg-zinc-950/60 focus:border-amber-400/60 focus:ring-amber-400/40"
+          }`}
         />
+        {error && <p className="mt-2 text-xs font-semibold text-rose-200">{error}</p>}
       </div>
     </div>
   );
