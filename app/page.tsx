@@ -187,7 +187,7 @@ export default function Home() {
           </p>
           <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">Build the chain</h1>
           <p className="max-w-2xl text-sm text-zinc-400 sm:text-base">
-            Tap a category pill, choose which link slot it belongs to, then type the connecting
+            Tap a category, choose which link slot it belongs to, then type the connecting
             word in the gap. Use each link exactly once to get from{" "}
             <span className="font-semibold text-zinc-100">{startWord}</span> to{" "}
             <span className="font-semibold text-zinc-100">{endWord}</span>.
@@ -195,16 +195,14 @@ export default function Home() {
         </header>
 
         <section className="rounded-2xl border border-zinc-800/70 bg-zinc-900/50 p-6 shadow-xl shadow-black/30 backdrop-blur">
-          <div className="flex items-center justify-between gap-4">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-zinc-500">
-                Categories
-              </p>
-              <p className="text-sm text-zinc-400">Pick a link type, then place it on a slot.</p>
-            </div>
-            <div className="text-right text-xs text-zinc-500">
+          <div className="flex flex-col gap-1">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-zinc-500">
+              Categories
+            </p>
+            <p className="text-sm text-zinc-400">Pick a link type, then place it on a slot.</p>
+            <p className="text-xs text-zinc-500">
               Tap a slot again with nothing selected to clear it.
-            </div>
+            </p>
           </div>
           <div className="mt-4 flex flex-wrap gap-3">
             {categories.map((category) => {
@@ -251,10 +249,6 @@ export default function Home() {
               <p className="text-sm text-zinc-400">
                 Place links and words in order; the next row appears after you fill the current one.
               </p>
-            </div>
-            <div className="text-xs text-zinc-500">
-              Start: <span className="font-semibold text-zinc-100">{startWord}</span> · End:{" "}
-              <span className="font-semibold text-zinc-100">{endWord}</span>
             </div>
           </div>
 
