@@ -25,6 +25,9 @@ const birdWords = new Set([
   "tern",
   "gull",
   "crow",
+  "ostrich",
+  "pelican",
+  "flamingo"
 ]);
 
 const synonymMap: Record<string, string[]> = {
@@ -52,8 +55,23 @@ export default function Home() {
 
   const rhymeKey = (word: string) => {
     const lower = word.toLowerCase();
-    const match = lower.match(/[aeiouy][a-z]*$/);
-    return match ? match[0] : lower.slice(-2);
+    const vowels = ["a", "e", "i", "o", "u", "y"];
+    let lastVowelIdx = -1;
+
+    for (let i = lower.length - 1; i >= 0; i -= 1) {
+      if (vowels.includes(lower[i])) {
+        lastVowelIdx = i;
+        break;
+      }
+    }
+
+    if (lastVowelIdx === -1) {
+      return lower.slice(-3);
+    }
+
+    // Capture from the last vowel through the end; ensures "stick" and "quick" both yield "ick".
+    const ending = lower.slice(lastVowelIdx);
+    return ending.length >= 2 ? ending : lower.slice(-2);
   };
 
   const validateGapWord = (gapIndex: number, value: string): string | null => {
