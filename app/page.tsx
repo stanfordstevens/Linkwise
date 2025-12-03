@@ -1,65 +1,317 @@
-import Image from "next/image";
+"use client";
+
+import { useMemo, useState } from "react";
+
+type CategoryId = "synonym" | "rhyme" | "bird";
+
+const categories: { id: CategoryId; label: string; accent: string }[] = [
+  { id: "synonym", label: "Synonym", accent: "from-emerald-400/20 to-emerald-500/20" },
+  { id: "rhyme", label: "Rhyme", accent: "from-sky-400/20 to-sky-500/20" },
+  { id: "bird", label: "Type of Bird", accent: "from-amber-400/25 to-amber-500/20" },
+];
+
+const startWord = "Fast";
+const endWord = "Day";
 
 export default function Home() {
+  const [selectedCategory, setSelectedCategory] = useState<CategoryId | null>(null);
+  const [linkAssignments, setLinkAssignments] = useState<(CategoryId | null)[]>([
+    null,
+    null,
+    null,
+  ]);
+  const [gaps, setGaps] = useState(["", ""]);
+
+  const categoryLookup = useMemo(
+    () => Object.fromEntries(categories.map((c) => [c.id, c.label])),
+    []
+  ) as Record<CategoryId, string>;
+
+  const handleSelectCategory = (id: CategoryId) => {
+    setSelectedCategory((current) => (current === id ? null : id));
+  };
+
+  const handleSlotClick = (slotIndex: number) => {
+    setLinkAssignments((prev) => {
+      const next = [...prev];
+
+      // Clear an assignment if no category is selected and slot already has one.
+      if (!selectedCategory) {
+        next[slotIndex] = null;
+        return next;
+      }
+
+      // Remove this category from any other slot so each is used once.
+      next.forEach((cat, idx) => {
+        if (idx !== slotIndex && cat === selectedCategory) {
+          next[idx] = null;
+        }
+      });
+
+      next[slotIndex] = selectedCategory;
+      return next;
+    });
+
+    // After placing, drop selection to encourage picking the next category.
+    if (selectedCategory) {
+      setSelectedCategory(null);
+    }
+  };
+
+  const handleWordChange = (gapIndex: number, value: string) => {
+    setGaps((prev) => {
+      const next = [...prev];
+      next[gapIndex] = value;
+      return next;
+    });
+  };
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+    <div className="min-h-screen bg-gradient-to-br from-zinc-950 via-zinc-900 to-zinc-950 text-zinc-50">
+      <div className="mx-auto flex min-h-screen max-w-4xl flex-col gap-8 px-6 py-12">
+        <header className="flex flex-col gap-2">
+          <p className="text-xs font-semibold uppercase tracking-[0.25em] text-zinc-500">
+            Linkwise · Daily 1
           </p>
+          <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">Build the chain</h1>
+          <p className="max-w-2xl text-sm text-zinc-400 sm:text-base">
+            Tap a category pill, choose which link slot it belongs to, then type the connecting
+            word in the gap. Use each link exactly once to get from{" "}
+            <span className="font-semibold text-zinc-100">{startWord}</span> to{" "}
+            <span className="font-semibold text-zinc-100">{endWord}</span>.
+          </p>
+        </header>
+
+        <section className="rounded-2xl border border-zinc-800/70 bg-zinc-900/50 p-6 shadow-xl shadow-black/30 backdrop-blur">
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-zinc-500">
+                Categories
+              </p>
+              <p className="text-sm text-zinc-400">Pick a link type, then place it on a slot.</p>
+            </div>
+            <div className="text-right text-xs text-zinc-500">
+              Tap a slot again with nothing selected to clear it.
+            </div>
+          </div>
+          <div className="mt-4 flex flex-wrap gap-3">
+            {categories.map((category) => {
+              const isSelected = selectedCategory === category.id;
+              const isUsed = linkAssignments.includes(category.id);
+
+              return (
+                <button
+                  key={category.id}
+                  type="button"
+                  onClick={() => handleSelectCategory(category.id)}
+                  className={`relative overflow-hidden rounded-full border border-zinc-800 px-4 py-2 text-sm font-semibold transition hover:border-zinc-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500/70 ${
+                    isSelected ? "ring-2 ring-amber-500/70" : ""
+                  }`}
+                >
+                  <span
+                    className={`pointer-events-none absolute inset-0 bg-gradient-to-r ${category.accent} opacity-70`}
+                  />
+                  <span className="relative flex items-center gap-2 text-zinc-100">
+                    {category.label}
+                    {isUsed && (
+                      <span className="rounded-full bg-zinc-900/70 px-2 py-0.5 text-[11px] font-medium text-emerald-200">
+                        placed
+                      </span>
+                    )}
+                    {isSelected && (
+                      <span className="rounded-full bg-amber-400/20 px-2 py-0.5 text-[11px] font-medium text-amber-200">
+                        active
+                      </span>
+                    )}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </section>
+
+        <section className="rounded-2xl border border-zinc-800/70 bg-zinc-900/50 p-6 shadow-xl shadow-black/30 backdrop-blur">
+          <div className="mb-6 flex items-center justify-between">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-zinc-500">
+                Chain
+              </p>
+              <p className="text-sm text-zinc-400">Place links, then fill each missing word.</p>
+            </div>
+            <div className="text-xs text-zinc-500">
+              Start: <span className="font-semibold text-zinc-100">{startWord}</span> · End:{" "}
+              <span className="font-semibold text-zinc-100">{endWord}</span>
+            </div>
+          </div>
+
+          <div className="relative">
+            <div className="absolute left-5 top-8 bottom-8 w-px bg-zinc-800" />
+
+            <div className="relative flex flex-col gap-6">
+              {/* Start word */}
+              <WordCard label="Start word" value={startWord} locked />
+
+              {/* Link slot 1 */}
+              <LinkSlot
+                index={0}
+                assignment={linkAssignments[0]}
+                categoryLookup={categoryLookup}
+                onClick={() => handleSlotClick(0)}
+                isActiveSelection={selectedCategory !== null}
+              />
+              {/* Gap 1 */}
+              <GapInput
+                label="Gap word"
+                placeholder="Type a word that fits the link above"
+                value={gaps[0]}
+                onChange={(value) => handleWordChange(0, value)}
+              />
+
+              {/* Link slot 2 */}
+              <LinkSlot
+                index={1}
+                assignment={linkAssignments[1]}
+                categoryLookup={categoryLookup}
+                onClick={() => handleSlotClick(1)}
+                isActiveSelection={selectedCategory !== null}
+              />
+              {/* Gap 2 */}
+              <GapInput
+                label="Gap word"
+                placeholder="Type the next connector"
+                value={gaps[1]}
+                onChange={(value) => handleWordChange(1, value)}
+              />
+
+              {/* Link slot 3 */}
+              <LinkSlot
+                index={2}
+                assignment={linkAssignments[2]}
+                categoryLookup={categoryLookup}
+                onClick={() => handleSlotClick(2)}
+                isActiveSelection={selectedCategory !== null}
+              />
+              {/* End word */}
+              <WordCard label="End word" value={endWord} locked />
+            </div>
+          </div>
+        </section>
+
+        <section className="rounded-2xl border border-zinc-800/70 bg-zinc-900/30 p-5 text-sm text-zinc-400">
+          <p className="font-semibold text-zinc-200">Example solution (spoiler)</p>
+          <p className="mt-1">
+            Fast → <span className="text-emerald-200">Synonym</span> → Swift →{" "}
+            <span className="text-amber-200">Type of Bird</span> → Jay →{" "}
+            <span className="text-sky-200">Rhyme</span> → Day
+          </p>
+        </section>
+      </div>
+    </div>
+  );
+}
+
+type WordCardProps = {
+  label: string;
+  value: string;
+  locked?: boolean;
+};
+
+function WordCard({ label, value, locked }: WordCardProps) {
+  return (
+    <div className="relative flex items-start gap-3 pl-10">
+      <div className="absolute left-1.5 top-2 h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_0_6px_rgba(16,185,129,0.15)]" />
+      <div className="w-28 shrink-0 text-xs uppercase tracking-[0.18em] text-zinc-500">
+        {label}
+      </div>
+      <div className="flex-1 rounded-xl border border-zinc-800/70 bg-zinc-900/80 px-4 py-3">
+        <div className="flex items-center gap-2">
+          <span className="text-lg font-semibold text-zinc-50">{value}</span>
+          {locked && (
+            <span className="rounded-full bg-zinc-800 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-[0.15em] text-zinc-400">
+              given
+            </span>
+          )}
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+      </div>
+    </div>
+  );
+}
+
+type GapInputProps = {
+  label: string;
+  placeholder: string;
+  value: string;
+  onChange: (value: string) => void;
+};
+
+function GapInput({ label, placeholder, value, onChange }: GapInputProps) {
+  return (
+    <div className="relative flex items-start gap-3 pl-10">
+      <div className="absolute left-1.5 top-2 h-2 w-2 rounded-full bg-amber-400 shadow-[0_0_0_6px_rgba(251,191,36,0.15)]" />
+      <div className="w-28 shrink-0 text-xs uppercase tracking-[0.18em] text-zinc-500">
+        {label}
+      </div>
+      <div className="flex-1">
+        <input
+          value={value}
+          onChange={(event) => onChange(event.target.value)}
+          placeholder={placeholder}
+          className="w-full rounded-xl border border-zinc-800/70 bg-zinc-950/60 px-4 py-3 text-base font-semibold text-zinc-100 placeholder:text-zinc-600 focus:border-amber-400/60 focus:outline-none focus:ring-2 focus:ring-amber-400/40"
+        />
+      </div>
+    </div>
+  );
+}
+
+type LinkSlotProps = {
+  index: number;
+  assignment: CategoryId | null;
+  categoryLookup: Record<CategoryId, string>;
+  onClick: () => void;
+  isActiveSelection: boolean;
+};
+
+function LinkSlot({ index, assignment, categoryLookup, onClick, isActiveSelection }: LinkSlotProps) {
+  const label = assignment ? categoryLookup[assignment] : null;
+  const slotNumber = index + 1;
+
+  return (
+    <div className="relative flex items-start gap-3 pl-10">
+      <div className="absolute left-1.5 top-2 h-2 w-2 rounded-full bg-sky-400 shadow-[0_0_0_6px_rgba(56,189,248,0.15)]" />
+      <div className="w-28 shrink-0 text-xs uppercase tracking-[0.18em] text-zinc-500">
+        Link {slotNumber}
+      </div>
+      <div className="flex-1">
+        <button
+          type="button"
+          onClick={onClick}
+          className={`flex w-full items-center justify-between rounded-xl border px-4 py-3 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500/70 ${
+            label
+              ? "border-sky-400/50 bg-sky-400/10 text-sky-50"
+              : "border-zinc-800/70 bg-zinc-950/60 text-zinc-400 hover:border-zinc-700 hover:bg-zinc-900/60"
+          }`}
+        >
+          <div className="flex flex-col">
+            <span className="text-xs uppercase tracking-[0.14em] text-zinc-500">
+              {label ? "Placed" : "Select & place"}
+            </span>
+            <span className="text-base font-semibold">
+              {label ?? "Tap a category, then tap here"}
+            </span>
+          </div>
+          <span
+            className={`rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] ${
+              isActiveSelection
+                ? "bg-amber-400/20 text-amber-200"
+                : label
+                ? "bg-sky-400/20 text-sky-100"
+                : "bg-zinc-800 text-zinc-300"
+            }`}
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+            {label ? "Linked" : isActiveSelection ? "Ready" : "Empty"}
+          </span>
+        </button>
+      </div>
     </div>
   );
 }
