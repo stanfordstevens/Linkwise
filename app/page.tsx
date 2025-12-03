@@ -76,7 +76,7 @@ export default function Home() {
 
     if (category === "bird") {
       if (!birdWords.has(current)) {
-        return `Should be a type of bird (e.g., Swift, Jay).`;
+        return `Should be a type of bird.`;
       }
       return null;
     }
@@ -217,6 +217,14 @@ export default function Home() {
             </div>
           </div>
 
+          {/*
+            Determine validation completion for gating progression and styling.
+            A gap is "valid" when it has text, has no error, and its link category is placed.
+          */}
+          {(() => {
+            const gap1Valid = Boolean(linkAssignments[0] && gaps[0].trim() && !gapErrors[0]);
+            const gap2Valid = Boolean(linkAssignments[1] && gaps[1].trim() && !gapErrors[1]);
+            return (
           <div className="relative">
             <div className="absolute left-5 top-8 bottom-8 w-px bg-zinc-800" />
 
@@ -240,12 +248,13 @@ export default function Home() {
                   placeholder="Type a word that fits the link above"
                   value={gaps[0]}
                   onChange={(value) => handleWordChange(0, value)}
+                  success={gap1Valid}
                   error={gapErrors[0]}
                 />
               )}
 
               {/* Link slot 2 appears after first gap is filled */}
-              {gaps[0].trim() && !gapErrors[0] && (
+              {gap1Valid && (
                 <LinkSlot
                   index={1}
                   assignment={linkAssignments[1]}
@@ -256,18 +265,19 @@ export default function Home() {
               )}
 
               {/* Gap 2 appears after second link is placed */}
-              {gaps[0].trim() && !gapErrors[0] && linkAssignments[1] && (
+              {gap1Valid && linkAssignments[1] && (
                 <GapInput
                   label="Gap word"
                   placeholder="Type the next connector"
                   value={gaps[1]}
                   onChange={(value) => handleWordChange(1, value)}
+                  success={gap2Valid}
                   error={gapErrors[1]}
                 />
               )}
 
               {/* Link slot 3 appears after second gap is filled */}
-              {gaps[1].trim() && !gapErrors[1] && (
+              {gap2Valid && (
                 <LinkSlot
                   index={2}
                   assignment={linkAssignments[2]}
@@ -281,6 +291,8 @@ export default function Home() {
               <WordCard label="End word" value={endWord} locked />
             </div>
           </div>
+            );
+          })()}
         </section>
       </div>
     </div>
@@ -319,10 +331,12 @@ type GapInputProps = {
   placeholder: string;
   value: string;
   onChange: (value: string) => void;
+  success?: boolean;
   error?: string | null;
 };
 
-function GapInput({ label, placeholder, value, onChange, error }: GapInputProps) {
+function GapInput({ label, placeholder, value, onChange, success, error }: GapInputProps) {
+  const showSuccess = success && !error && value.trim().length > 0;
   return (
     <div className="relative flex items-start gap-3 pl-10">
       <div className="absolute left-1.5 top-2 h-2 w-2 rounded-full bg-amber-400 shadow-[0_0_0_6px_rgba(251,191,36,0.15)]" />
@@ -337,10 +351,15 @@ function GapInput({ label, placeholder, value, onChange, error }: GapInputProps)
           className={`w-full rounded-xl border px-4 py-3 text-base font-semibold text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:ring-2 ${
             error
               ? "border-rose-500/60 bg-rose-500/5 focus:border-rose-500/80 focus:ring-rose-500/30"
+              : showSuccess
+              ? "border-emerald-500/70 bg-emerald-500/5 focus:border-emerald-400/80 focus:ring-emerald-400/30"
               : "border-zinc-800/70 bg-zinc-950/60 focus:border-amber-400/60 focus:ring-amber-400/40"
           }`}
         />
         {error && <p className="mt-2 text-xs font-semibold text-rose-200">{error}</p>}
+        {!error && showSuccess && (
+          <p className="mt-2 text-xs font-semibold text-emerald-200">Accepted</p>
+        )}
       </div>
     </div>
   );
