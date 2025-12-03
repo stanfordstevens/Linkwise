@@ -136,7 +136,9 @@ export default function Home() {
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-zinc-500">
                 Chain
               </p>
-              <p className="text-sm text-zinc-400">Place links, then fill each missing word.</p>
+              <p className="text-sm text-zinc-400">
+                Place links and words in order; the next row appears after you fill the current one.
+              </p>
             </div>
             <div className="text-xs text-zinc-500">
               Start: <span className="font-semibold text-zinc-100">{startWord}</span> · End:{" "}
@@ -159,39 +161,50 @@ export default function Home() {
                 onClick={() => handleSlotClick(0)}
                 isActiveSelection={selectedCategory !== null}
               />
-              {/* Gap 1 */}
-              <GapInput
-                label="Gap word"
-                placeholder="Type a word that fits the link above"
-                value={gaps[0]}
-                onChange={(value) => handleWordChange(0, value)}
-              />
 
-              {/* Link slot 2 */}
-              <LinkSlot
-                index={1}
-                assignment={linkAssignments[1]}
-                categoryLookup={categoryLookup}
-                onClick={() => handleSlotClick(1)}
-                isActiveSelection={selectedCategory !== null}
-              />
-              {/* Gap 2 */}
-              <GapInput
-                label="Gap word"
-                placeholder="Type the next connector"
-                value={gaps[1]}
-                onChange={(value) => handleWordChange(1, value)}
-              />
+              {/* Gap 1 appears after first link is placed */}
+              {linkAssignments[0] && (
+                <GapInput
+                  label="Gap word"
+                  placeholder="Type a word that fits the link above"
+                  value={gaps[0]}
+                  onChange={(value) => handleWordChange(0, value)}
+                />
+              )}
 
-              {/* Link slot 3 */}
-              <LinkSlot
-                index={2}
-                assignment={linkAssignments[2]}
-                categoryLookup={categoryLookup}
-                onClick={() => handleSlotClick(2)}
-                isActiveSelection={selectedCategory !== null}
-              />
-              {/* End word */}
+              {/* Link slot 2 appears after first gap is filled */}
+              {gaps[0].trim() && (
+                <LinkSlot
+                  index={1}
+                  assignment={linkAssignments[1]}
+                  categoryLookup={categoryLookup}
+                  onClick={() => handleSlotClick(1)}
+                  isActiveSelection={selectedCategory !== null}
+                />
+              )}
+
+              {/* Gap 2 appears after second link is placed */}
+              {gaps[0].trim() && linkAssignments[1] && (
+                <GapInput
+                  label="Gap word"
+                  placeholder="Type the next connector"
+                  value={gaps[1]}
+                  onChange={(value) => handleWordChange(1, value)}
+                />
+              )}
+
+              {/* Link slot 3 appears after second gap is filled */}
+              {gaps[1].trim() && (
+                <LinkSlot
+                  index={2}
+                  assignment={linkAssignments[2]}
+                  categoryLookup={categoryLookup}
+                  onClick={() => handleSlotClick(2)}
+                  isActiveSelection={selectedCategory !== null}
+                />
+              )}
+
+              {/* End word always visible */}
               <WordCard label="End word" value={endWord} locked />
             </div>
           </div>
