@@ -196,15 +196,6 @@ export default function Home() {
             </div>
           </div>
         </section>
-
-        <section className="rounded-2xl border border-zinc-800/70 bg-zinc-900/30 p-5 text-sm text-zinc-400">
-          <p className="font-semibold text-zinc-200">Example solution (spoiler)</p>
-          <p className="mt-1">
-            Fast → <span className="text-emerald-200">Synonym</span> → Swift →{" "}
-            <span className="text-amber-200">Type of Bird</span> → Jay →{" "}
-            <span className="text-sky-200">Rhyme</span> → Day
-          </p>
-        </section>
       </div>
     </div>
   );
