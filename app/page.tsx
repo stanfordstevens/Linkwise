@@ -344,19 +344,19 @@ type WordCardProps = {
 
 function WordCard({ label, value, locked }: WordCardProps) {
   return (
-    <div className="relative flex items-start gap-3 pl-10">
+    <div className="relative pl-10">
       <div className="absolute left-1.5 top-2 h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_0_6px_rgba(16,185,129,0.15)]" />
-      <div className="w-28 shrink-0 text-xs uppercase tracking-[0.18em] text-zinc-500">
-        {label}
-      </div>
-      <div className="flex-1 rounded-xl border border-zinc-800/70 bg-zinc-900/80 px-4 py-3">
-        <div className="flex items-center gap-2">
-          <span className="text-lg font-semibold text-zinc-50">{value}</span>
-          {locked && (
-            <span className="rounded-full bg-zinc-800 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-[0.15em] text-zinc-400">
-              given
-            </span>
-          )}
+      <div className="flex flex-col gap-2">
+        <div className="text-xs uppercase tracking-[0.18em] text-zinc-500">{label}</div>
+        <div className="rounded-xl border border-zinc-800/70 bg-zinc-900/80 px-4 py-3">
+          <div className="flex items-center gap-2">
+            <span className="text-lg font-semibold text-zinc-50">{value}</span>
+            {locked && (
+              <span className="rounded-full bg-zinc-800 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-[0.15em] text-zinc-400">
+                given
+              </span>
+            )}
+          </div>
         </div>
       </div>
     </div>
@@ -375,28 +375,28 @@ type GapInputProps = {
 function GapInput({ label, placeholder, value, onChange, success, error }: GapInputProps) {
   const showSuccess = success && !error && value.trim().length > 0;
   return (
-    <div className="relative flex items-start gap-3 pl-10">
+    <div className="relative pl-10">
       <div className="absolute left-1.5 top-2 h-2 w-2 rounded-full bg-amber-400 shadow-[0_0_0_6px_rgba(251,191,36,0.15)]" />
-      <div className="w-28 shrink-0 text-xs uppercase tracking-[0.18em] text-zinc-500">
-        {label}
-      </div>
-      <div className="flex-1">
-        <input
-          value={value}
-          onChange={(event) => onChange(event.target.value)}
-          placeholder={placeholder}
-          className={`w-full rounded-xl border px-4 py-3 text-base font-semibold text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:ring-2 ${
-            error
-              ? "border-rose-500/60 bg-rose-500/5 focus:border-rose-500/80 focus:ring-rose-500/30"
-              : showSuccess
-              ? "border-emerald-500/70 bg-emerald-500/5 focus:border-emerald-400/80 focus:ring-emerald-400/30"
-              : "border-zinc-800/70 bg-zinc-950/60 focus:border-amber-400/60 focus:ring-amber-400/40"
-          }`}
-        />
-        {error && <p className="mt-2 text-xs font-semibold text-rose-200">{error}</p>}
-        {!error && showSuccess && (
-          <p className="mt-2 text-xs font-semibold text-emerald-200">Accepted</p>
-        )}
+      <div className="flex flex-col gap-2">
+        <div className="text-xs uppercase tracking-[0.18em] text-zinc-500">{label}</div>
+        <div>
+          <input
+            value={value}
+            onChange={(event) => onChange(event.target.value)}
+            placeholder={placeholder}
+            className={`w-full rounded-xl border px-4 py-3 text-base font-semibold text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:ring-2 ${
+              error
+                ? "border-rose-500/60 bg-rose-500/5 focus:border-rose-500/80 focus:ring-rose-500/30"
+                : showSuccess
+                ? "border-emerald-500/70 bg-emerald-500/5 focus:border-emerald-400/80 focus:ring-emerald-400/30"
+                : "border-zinc-800/70 bg-zinc-950/60 focus:border-amber-400/60 focus:ring-amber-400/40"
+            }`}
+          />
+          {error && <p className="mt-2 text-xs font-semibold text-rose-200">{error}</p>}
+          {!error && showSuccess && (
+            <p className="mt-2 text-xs font-semibold text-emerald-200">Accepted</p>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -423,44 +423,44 @@ function LinkSlot({
   const slotNumber = index + 1;
 
   return (
-    <div className="relative flex items-start gap-3 pl-10">
+    <div className="relative pl-10">
       <div className="absolute left-1.5 top-2 h-2 w-2 rounded-full bg-sky-400 shadow-[0_0_0_6px_rgba(56,189,248,0.15)]" />
-      <div className="w-28 shrink-0 text-xs uppercase tracking-[0.18em] text-zinc-500">
-        Link {slotNumber}
-      </div>
-      <div className="flex-1">
-        <button
-          type="button"
-          onClick={onClick}
-          className={`flex w-full items-center justify-between rounded-xl border px-4 py-3 text-left transition focus-visible:outline-none focus-visible:ring-2 ${
-            label
-              ? "border-sky-400/50 bg-sky-400/10 text-sky-50 focus-visible:ring-amber-500/70"
-              : "border-zinc-800/70 bg-zinc-950/60 text-zinc-400 hover:border-zinc-700 hover:bg-zinc-900/60 focus-visible:ring-amber-500/70"
-          } ${error ? "border-rose-500/70 bg-rose-500/5 focus-visible:ring-rose-500/40" : ""}`}
-        >
-          <div className="flex flex-col">
-            <span className="text-xs uppercase tracking-[0.14em] text-zinc-500">
-              {label ? "Placed" : "Select & place"}
-            </span>
-            <span className="text-base font-semibold">
-              {label ?? "Tap a category, then tap here"}
-            </span>
-          </div>
-          <span
-            className={`rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] ${
-              isActiveSelection
-                ? "bg-amber-400/20 text-amber-200"
-                : label
-                ? "bg-sky-400/20 text-sky-100"
-                : error
-                ? "bg-rose-500/20 text-rose-100"
-                : "bg-zinc-800 text-zinc-300"
-            }`}
+      <div className="flex flex-col gap-2">
+        <div className="text-xs uppercase tracking-[0.18em] text-zinc-500">Link {slotNumber}</div>
+        <div>
+          <button
+            type="button"
+            onClick={onClick}
+            className={`flex w-full items-center justify-between rounded-xl border px-4 py-3 text-left transition focus-visible:outline-none focus-visible:ring-2 ${
+              label
+                ? "border-sky-400/50 bg-sky-400/10 text-sky-50 focus-visible:ring-amber-500/70"
+                : "border-zinc-800/70 bg-zinc-950/60 text-zinc-400 hover:border-zinc-700 hover:bg-zinc-900/60 focus-visible:ring-amber-500/70"
+            } ${error ? "border-rose-500/70 bg-rose-500/5 focus-visible:ring-rose-500/40" : ""}`}
           >
-            {label ? "Linked" : isActiveSelection ? "Ready" : "Empty"}
-          </span>
-        </button>
-        {error && <p className="mt-2 text-xs font-semibold text-rose-200">{error}</p>}
+            <div className="flex flex-col">
+              <span className="text-xs uppercase tracking-[0.14em] text-zinc-500">
+                {label ? "Placed" : "Select & place"}
+              </span>
+              <span className="text-base font-semibold">
+                {label ?? "Tap a category, then tap here"}
+              </span>
+            </div>
+            <span
+              className={`rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] ${
+                isActiveSelection
+                  ? "bg-amber-400/20 text-amber-200"
+                  : label
+                  ? "bg-sky-400/20 text-sky-100"
+                  : error
+                  ? "bg-rose-500/20 text-rose-100"
+                  : "bg-zinc-800 text-zinc-300"
+              }`}
+            >
+              {label ? "Linked" : isActiveSelection ? "Ready" : "Empty"}
+            </span>
+          </button>
+          {error && <p className="mt-2 text-xs font-semibold text-rose-200">{error}</p>}
+        </div>
       </div>
     </div>
   );
