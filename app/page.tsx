@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 type CategoryId = "synonym" | "rhyme" | "bird";
 
@@ -47,11 +47,23 @@ export default function Home() {
   const [gaps, setGaps] = useState(["", ""]);
   const [gapErrors, setGapErrors] = useState<(string | null)[]>([null, null]);
   const [linkErrors, setLinkErrors] = useState<(string | null)[]>([null, null, null]);
+  const [showSuccess, setShowSuccess] = useState(false);
 
   const categoryLookup = useMemo(
     () => Object.fromEntries(categories.map((c) => [c.id, c.label])),
     []
   ) as Record<CategoryId, string>;
+
+  const gap1Valid = Boolean(linkAssignments[0] && gaps[0].trim() && !gapErrors[0]);
+  const gap2Valid = Boolean(linkAssignments[1] && gaps[1].trim() && !gapErrors[1]);
+  const finalLinkPlaced = Boolean(linkAssignments[2] && !linkErrors[2]);
+  const chainComplete = gap1Valid && gap2Valid && finalLinkPlaced;
+
+  useEffect(() => {
+    if (chainComplete) {
+      setShowSuccess(true);
+    }
+  }, [chainComplete]);
 
   const rhymeKey = (word: string) => {
     const lower = word.toLowerCase();
@@ -252,14 +264,6 @@ export default function Home() {
             </div>
           </div>
 
-          {/*
-            Determine validation completion for gating progression and styling.
-            A gap is "valid" when it has text, has no error, and its link category is placed.
-          */}
-          {(() => {
-            const gap1Valid = Boolean(linkAssignments[0] && gaps[0].trim() && !gapErrors[0]);
-            const gap2Valid = Boolean(linkAssignments[1] && gaps[1].trim() && !gapErrors[1]);
-            return (
           <div className="relative">
             <div className="absolute left-5 top-8 bottom-8 w-px bg-zinc-800" />
 
@@ -328,10 +332,33 @@ export default function Home() {
               <WordCard label="End word" value={endWord} locked />
             </div>
           </div>
-            );
-          })()}
         </section>
       </div>
+
+      {showSuccess && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-6 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-2xl border border-emerald-500/40 bg-zinc-950/90 p-6 shadow-2xl shadow-emerald-500/20">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-300">
+                  Chain complete
+                </p>
+                <h2 className="mt-2 text-2xl font-semibold text-zinc-50">Nice linkwork!</h2>
+                <p className="mt-2 text-sm text-zinc-400">
+                  You connected {startWord} → {endWord} using every link exactly once.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowSuccess(false)}
+                className="rounded-full border border-emerald-400/40 bg-emerald-500/10 px-3 py-1 text-xs font-semibold text-emerald-100 transition hover:border-emerald-300/60 hover:bg-emerald-500/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/60"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
