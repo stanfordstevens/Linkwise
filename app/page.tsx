@@ -43,6 +43,7 @@ export default function Home() {
   ]);
   const [gaps, setGaps] = useState(["", ""]);
   const [gapErrors, setGapErrors] = useState<(string | null)[]>([null, null]);
+  const [linkErrors, setLinkErrors] = useState<(string | null)[]>([null, null, null]);
 
   const categoryLookup = useMemo(
     () => Object.fromEntries(categories.map((c) => [c.id, c.label])),
@@ -102,7 +103,24 @@ export default function Home() {
       // Clear an assignment if no category is selected and slot already has one.
       if (!selectedCategory) {
         next[slotIndex] = null;
+        setLinkErrors((errors) => {
+          const updated = [...errors];
+          updated[slotIndex] = null;
+          return updated;
+        });
         return next;
+      }
+
+      // Validate whether this category can follow the previous word.
+      const prevWord =
+        slotIndex === 0 ? startWord : gaps[slotIndex - 1] ? gaps[slotIndex - 1] : "";
+      if (selectedCategory === "bird" && !birdWords.has(prevWord.trim().toLowerCase())) {
+        setLinkErrors((errors) => {
+          const updated = [...errors];
+          updated[slotIndex] = `Previous word must be a type of bird.`;
+          return updated;
+        });
+        return prev;
       }
 
       // Remove this category from any other slot so each is used once.
@@ -113,6 +131,11 @@ export default function Home() {
       });
 
       next[slotIndex] = selectedCategory;
+      setLinkErrors((errors) => {
+        const updated = [...errors];
+        updated[slotIndex] = null;
+        return updated;
+      });
       return next;
     });
 
@@ -261,6 +284,7 @@ export default function Home() {
                   categoryLookup={categoryLookup}
                   onClick={() => handleSlotClick(1)}
                   isActiveSelection={selectedCategory !== null}
+                  error={linkErrors[1]}
                 />
               )}
 
@@ -284,6 +308,7 @@ export default function Home() {
                   categoryLookup={categoryLookup}
                   onClick={() => handleSlotClick(2)}
                   isActiveSelection={selectedCategory !== null}
+                  error={linkErrors[2]}
                 />
               )}
 
@@ -371,9 +396,17 @@ type LinkSlotProps = {
   categoryLookup: Record<CategoryId, string>;
   onClick: () => void;
   isActiveSelection: boolean;
+  error?: string | null;
 };
 
-function LinkSlot({ index, assignment, categoryLookup, onClick, isActiveSelection }: LinkSlotProps) {
+function LinkSlot({
+  index,
+  assignment,
+  categoryLookup,
+  onClick,
+  isActiveSelection,
+  error,
+}: LinkSlotProps) {
   const label = assignment ? categoryLookup[assignment] : null;
   const slotNumber = index + 1;
 
@@ -387,11 +420,11 @@ function LinkSlot({ index, assignment, categoryLookup, onClick, isActiveSelectio
         <button
           type="button"
           onClick={onClick}
-          className={`flex w-full items-center justify-between rounded-xl border px-4 py-3 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500/70 ${
+          className={`flex w-full items-center justify-between rounded-xl border px-4 py-3 text-left transition focus-visible:outline-none focus-visible:ring-2 ${
             label
-              ? "border-sky-400/50 bg-sky-400/10 text-sky-50"
-              : "border-zinc-800/70 bg-zinc-950/60 text-zinc-400 hover:border-zinc-700 hover:bg-zinc-900/60"
-          }`}
+              ? "border-sky-400/50 bg-sky-400/10 text-sky-50 focus-visible:ring-amber-500/70"
+              : "border-zinc-800/70 bg-zinc-950/60 text-zinc-400 hover:border-zinc-700 hover:bg-zinc-900/60 focus-visible:ring-amber-500/70"
+          } ${error ? "border-rose-500/70 bg-rose-500/5 focus-visible:ring-rose-500/40" : ""}`}
         >
           <div className="flex flex-col">
             <span className="text-xs uppercase tracking-[0.14em] text-zinc-500">
@@ -407,12 +440,15 @@ function LinkSlot({ index, assignment, categoryLookup, onClick, isActiveSelectio
                 ? "bg-amber-400/20 text-amber-200"
                 : label
                 ? "bg-sky-400/20 text-sky-100"
+                : error
+                ? "bg-rose-500/20 text-rose-100"
                 : "bg-zinc-800 text-zinc-300"
             }`}
           >
             {label ? "Linked" : isActiveSelection ? "Ready" : "Empty"}
           </span>
         </button>
+        {error && <p className="mt-2 text-xs font-semibold text-rose-200">{error}</p>}
       </div>
     </div>
   );
